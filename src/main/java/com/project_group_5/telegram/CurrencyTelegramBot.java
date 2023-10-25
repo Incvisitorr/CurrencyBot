@@ -11,11 +11,13 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -23,6 +25,7 @@ import java.util.stream.Stream;
 public class CurrencyTelegramBot extends TelegramLongPollingCommandBot {
     private CurrencyService currencyService;
     private ShowCurr showCurr;
+    Long chatId;
 
     public CurrencyTelegramBot() {
         //Инициализация сервисов
@@ -44,21 +47,9 @@ public class CurrencyTelegramBot extends TelegramLongPollingCommandBot {
     @Override
     public void processNonCommandUpdate(Update update) {
         String showCuText;
-//        if(update.hasMessage()){
-//            String msg=update.getMessage().getText();
-//            String respText="You are writing "+msg;
-//            SendMessage sendMessage=new SendMessage();
-//            sendMessage.setText(respText);
-//            sendMessage.setChatId(Long.toString(update.getMessage().getChatId()));
-//            try {
-//                execute(sendMessage);
-//            } catch (TelegramApiException e) {
-//                throw new RuntimeException(e);
-//            }
-//        }
-
+        chatId = update.getCallbackQuery().getMessage().getChatId();
+        String chatIdForMess=Long.toString(chatId);
         if (update.getCallbackQuery().getData().equals("getInfoButton")) {
-            Long chatId = update.getCallbackQuery().getMessage().getChatId();
             SendMessage respMess = new SendMessage();
 
             Currency currency = Currency.valueOf(Currency.USD.name());//Заглушка для настроек по умолчанию
@@ -66,7 +57,7 @@ public class CurrencyTelegramBot extends TelegramLongPollingCommandBot {
             showCuText = showCurr.convert(currancyReate, currency);
 
             respMess.setText(showCuText);
-            respMess.setChatId(Long.toString(chatId));
+            respMess.setChatId(chatIdForMess);
             try {
                 execute(respMess);
             } catch (TelegramApiException e) {
@@ -108,7 +99,7 @@ public class CurrencyTelegramBot extends TelegramLongPollingCommandBot {
             showCuText = "Налаштування";
             settingsMess.setText(showCuText);
             settingsMess.setReplyMarkup(keyboardSettings);
-            settingsMess.setChatId(Long.toString(update.getCallbackQuery().getMessage().getChatId()));
+            settingsMess.setChatId(chatIdForMess);
             try {
                 execute(settingsMess);
             } catch (TelegramApiException e) {
@@ -145,7 +136,7 @@ public class CurrencyTelegramBot extends TelegramLongPollingCommandBot {
             showCuText = "Кількість знаків після коми";
             singsMess.setText(showCuText);
             singsMess.setReplyMarkup(keyboardSings);
-            singsMess.setChatId(Long.toString(update.getCallbackQuery().getMessage().getChatId()));
+            singsMess.setChatId(chatIdForMess);
             try {
                 execute(singsMess);
             } catch (TelegramApiException e) {
@@ -166,7 +157,7 @@ public class CurrencyTelegramBot extends TelegramLongPollingCommandBot {
             showCuText = "Валюти";
             currencyMess.setText(showCuText);
             currencyMess.setReplyMarkup(keyboardCurrency);
-            currencyMess.setChatId(Long.toString(update.getCallbackQuery().getMessage().getChatId()));
+            currencyMess.setChatId(chatIdForMess);
             try {
                 execute(currencyMess);
             } catch (TelegramApiException e) {
@@ -198,10 +189,11 @@ public class CurrencyTelegramBot extends TelegramLongPollingCommandBot {
                     .builder()
                     .keyboard(Collections.singleton(buttonsOfBanks))
                     .build();
+
             showCuText = "Банки";
             bankMess.setText(showCuText);
             bankMess.setReplyMarkup(keyboardBanks);
-            bankMess.setChatId(Long.toString(update.getCallbackQuery().getMessage().getChatId()));
+            bankMess.setChatId(chatIdForMess);
             try {
                 execute(bankMess);
             } catch (TelegramApiException e) {
@@ -209,8 +201,47 @@ public class CurrencyTelegramBot extends TelegramLongPollingCommandBot {
             }
 
         }
-        if (update.getCallbackQuery().getData().equals("Notific")) {
 
+        if (update.getCallbackQuery().getData().equals("Notific")) {
+            SendMessage notificMess = new SendMessage();
+
+            ReplyKeyboardMarkup keyboardMarkup=new ReplyKeyboardMarkup();
+            List<KeyboardRow> keyNotific=new ArrayList<>();
+
+            KeyboardRow row=new KeyboardRow();
+            row.add("9");
+            row.add("10");
+            row.add("11");
+            keyNotific.add(row);
+
+            row=new KeyboardRow();
+            row.add("12");
+            row.add("13");
+            row.add("14");
+            keyNotific.add(row);
+
+            row=new KeyboardRow();
+            row.add("15");
+            row.add("16");
+            row.add("17");
+            keyNotific.add(row);
+
+            row=new KeyboardRow();
+            row.add("18");
+            row.add("Вимкнути повідомлення");
+            keyNotific.add(row);
+
+            keyboardMarkup.setKeyboard(keyNotific);
+
+            showCuText = "Расписание";
+            notificMess.setText(showCuText);
+            notificMess.setReplyMarkup(keyboardMarkup);
+            notificMess.setChatId(chatIdForMess);
+            try {
+                execute(notificMess);
+            } catch (TelegramApiException e) {
+                throw new RuntimeException(e);
+            }
         }
 
 
