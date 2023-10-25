@@ -56,16 +56,7 @@ public class startCommand extends BotCommand {
 
 
         msg.setReplyMarkup(keyboardStart);
-        //-------------Лист валютных кнопок------------------------
-//        List<InlineKeyboardButton> buttonsCurrency = Stream.of(Currency.EUR, Currency.USD)
-//                .map(Enum::name)
-//                .map(it -> InlineKeyboardButton.builder().text(it).callbackData(it).build())
-//                .collect(Collectors.toList());
-//        InlineKeyboardMarkup keyboardCurrency = InlineKeyboardMarkup
-//                .builder()
-//                .keyboard(Collections.singleton(buttonsCurrency))
-//                .build();
-        //--------------------------------------------------
+
         try {
             absSender.execute(msg);
         } catch (TelegramApiException e) {
