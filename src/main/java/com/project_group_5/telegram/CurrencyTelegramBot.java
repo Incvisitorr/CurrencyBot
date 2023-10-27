@@ -32,6 +32,7 @@ public class CurrencyTelegramBot extends TelegramLongPollingCommandBot {
         currencyService = new PrivatBankCurrencyService();
         showCurr = new ShowCurr();
         register(new startCommand());
+        startCurrencyUpdates();
     }
 
     @Override
