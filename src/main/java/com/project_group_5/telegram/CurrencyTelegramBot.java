@@ -246,6 +246,37 @@ public class CurrencyTelegramBot extends TelegramLongPollingCommandBot {
 
 
     }
-
+private void startCurrencyUpdates() {   
+    Timer timer = new Timer();
+    int notificationHour = 9; // Установка времени рассылки (9:00 утра) 
+    long interval = 60 * 60 * 1000; // Интервал рассылки (1 час) 
+    Date firstExecutionTime = calculateFirstExecutionTime(notificationHour);
+    timer.scheduleAtFixedRate(new TimerTask() {
+       @Override      
+        public void run() {
+          // В этом методе получаем актуальные курсы и отправляем их подписчикам           
+            sendCurrencyUpdateToSubscribers();
+       }    }, firstExecutionTime, interval);
 }
+private Date calculateFirstExecutionTime(int notificationHour) {    
+    long currentTime = System.currentTimeMillis();
+    long todayNotificationTime = currentTime - (currentTime % 86400000) + (notificationHour * 3600000); // 86400000 миллисекунд в сутках, 3600000 миллисекунд в часе 
+    if (todayNotificationTime <= currentTime) {       
+        todayNotificationTime += 86400000; // Если указанное время уже прошло сегодня, переносим на завтра 
+    }
+    return new Date(todayNotificationTime);
+}
+private void sendCurrencyUpdateToSubscribers() {
+        Currency currency = Currency.USD;
+    double exchangeRate = currencyService.getRate(currency);
+    // Отправка сообщения с курсом валюты подписчикам     
+    SendMessage message = new SendMessage();
+    message.setChatId(chatId.toString());   
+    message.setText(showCurr.convert(exchangeRate, currency));
+    try {
+       execute(message);    
+    } catch (TelegramApiException e) {
+       e.printStackTrace();    
+    }
+}}
 
