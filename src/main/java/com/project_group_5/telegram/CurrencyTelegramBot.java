@@ -1,19 +1,13 @@
 package com.project_group_5.telegram;
-
-import com.project_group_5.currency.Currency;
-import com.project_group_5.currency.CurrencyService;
-import com.project_group_5.currency.PrivatBankCurrencyService;
+import com.project_group_5.currency.*;
 import com.project_group_5.currencyUi.ShowCurr;
 import com.project_group_5.telegram.commands.startCommand;
-import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.extensions.bots.commandbot.TelegramLongPollingCommandBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
@@ -23,13 +17,17 @@ import java.util.stream.Stream;
 
 
 public class CurrencyTelegramBot extends TelegramLongPollingCommandBot {
-    private CurrencyService currencyService;
+    private CurrencyServicePrivate currencyServicePrivate;
+    private CurrencyServiceMono currencyServiceMono;
+    private CurrencyServiceNBU currencyServiceNBU;
     private ShowCurr showCurr;
     Long chatId;
 
     public CurrencyTelegramBot() {
         //Инициализация сервисов
-        currencyService = new PrivatBankCurrencyService();
+        currencyServicePrivate = new PrivatBankCurrencyService();
+        currencyServiceMono=new MonoBankCurrencyService();
+        currencyServiceNBU=new NBUCurrencyService();
         showCurr = new ShowCurr();
         register(new startCommand());
         startCurrencyUpdates();
@@ -48,16 +46,31 @@ public class CurrencyTelegramBot extends TelegramLongPollingCommandBot {
     @Override
     public void processNonCommandUpdate(Update update) {
         String showCuText;
+        String showCuText1;
+        String showCuText2;
         chatId = update.getCallbackQuery().getMessage().getChatId();
         String chatIdForMess=Long.toString(chatId);
         if (update.getCallbackQuery().getData().equals("getInfoButton")) {
             SendMessage respMess = new SendMessage();
 
-            Currency currency = Currency.valueOf(Currency.USD.name());//Заглушка для настроек по умолчанию
-            double currancyReate = currencyService.getRate(currency);
-            showCuText = showCurr.convert(currancyReate, currency);
+            //CurrencyPrivate
+            CurrencyPrivate currencyPrivate = CurrencyPrivate.valueOf(CurrencyPrivate.USD.name());
+            double currancyReate = currencyServicePrivate.getRatePrivate(currencyPrivate);
+            showCuText =showCurr.convertPrivate(currancyReate, currencyPrivate);
 
-            respMess.setText(showCuText);
+            //CurrencyMono
+            CurrencyMono currencyMono=CurrencyMono.valueOf(CurrencyMono.USD.name());
+            double currancyReateMono=currencyServiceMono.getRateMono(currencyMono);
+            showCuText1=showCurr.convertMono(currancyReateMono,currencyMono);
+
+            //CurrencyNBU
+            CurrencyNBU currencyNBU=CurrencyNBU.valueOf(CurrencyNBU.EUR.name());
+            double currancyReateNBU=currencyServiceNBU.getRateNBU(currencyNBU);
+            showCuText2=showCurr.convertNBU(currancyReateNBU,currencyNBU);
+
+            String result=showCuText+"\n"+showCuText1+"\n"+showCuText2;
+
+            respMess.setText(result);
             respMess.setChatId(chatIdForMess);
             try {
                 execute(respMess);
@@ -144,10 +157,10 @@ public class CurrencyTelegramBot extends TelegramLongPollingCommandBot {
                 throw new RuntimeException(e);
             }
         }
-
+        //TODO Переделать на валюты выбора какого банка?
         if (update.getCallbackQuery().getData().equals("Currency")) {
             SendMessage currencyMess = new SendMessage();
-            List<InlineKeyboardButton> buttonsCurrency = Stream.of(Currency.EUR, Currency.USD)
+            List<InlineKeyboardButton> buttonsCurrency = Stream.of(CurrencyPrivate.EUR, CurrencyPrivate.USD)
                     .map(Enum::name)
                     .map(it -> InlineKeyboardButton.builder().text(it).callbackData(it).build())
                     .collect(Collectors.toList());
@@ -244,8 +257,6 @@ public class CurrencyTelegramBot extends TelegramLongPollingCommandBot {
                 throw new RuntimeException(e);
             }
         }
-
-
     }
 private void startCurrencyUpdates() {   
     Timer timer = new Timer();
@@ -268,12 +279,12 @@ private Date calculateFirstExecutionTime(int notificationHour) {
     return new Date(todayNotificationTime);
 }
 private void sendCurrencyUpdateToSubscribers() {
-        Currency currency = Currency.USD;
-    double exchangeRate = currencyService.getRate(currency);
+        CurrencyPrivate currency = CurrencyPrivate.USD;
+    double exchangeRate = currencyServicePrivate.getRatePrivate(currency);//Выбор банка
     // Отправка сообщения с курсом валюты подписчикам     
     SendMessage message = new SendMessage();
     message.setChatId(chatId.toString());   
-    message.setText(showCurr.convert(exchangeRate, currency));
+    message.setText(showCurr.convertPrivate(exchangeRate, currency));
     try {
        execute(message);    
     } catch (TelegramApiException e) {

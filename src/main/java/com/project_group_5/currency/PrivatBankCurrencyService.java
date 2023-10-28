@@ -8,17 +8,17 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.List;
 
-public class PrivatBankCurrencyService implements CurrencyService{
+public class PrivatBankCurrencyService implements CurrencyServicePrivate {
 
     @Override
-    public double getRate(Currency currency) {
-        String url = "https://api.privatbank.ua/p24api/pubinfo?json&exchange&coursid=5";
+    public double getRatePrivate(CurrencyPrivate currencyPrivate) {
+        String urlPrivate = "https://api.privatbank.ua/p24api/pubinfo?json&exchange&coursid=5";
 
         //Get JSON
         String json;
         try {
             json = Jsoup
-                    .connect(url)
+                    .connect(urlPrivate)
                     .ignoreContentType(true)
                     .get()
                     .body()
@@ -28,17 +28,18 @@ public class PrivatBankCurrencyService implements CurrencyService{
             throw new IllegalStateException("Can't connect to Privat API");
         }
 
-        //Convert json => Java Object
-          Type typeToken = TypeToken
-                .getParameterized(List.class, CurrencyItem.class)
+        //Convert json => Java Object Priavat
+        Type typeToken = TypeToken
+                .getParameterized(List.class, CurrencyItemPrivate.class)
                 .getType();
-        List<CurrencyItem> currencyItems = new Gson().fromJson(json, typeToken);
+        List<CurrencyItemPrivate> currencyItems = new Gson().fromJson(json, typeToken);
 
         return currencyItems.stream()
-                .filter(it -> it.getCcy() == currency)
-                .filter(it -> it.getBase_ccy() == Currency.UAH)
-                .map(CurrencyItem::getBuy)
+                .filter(it -> it.getCcy() == currencyPrivate)
+                .filter(it -> it.getBase_ccy() == CurrencyPrivate.UAH)
+                .map(CurrencyItemPrivate::getBuy)
                 .findFirst()
                 .orElseThrow();
+
     }
 }
