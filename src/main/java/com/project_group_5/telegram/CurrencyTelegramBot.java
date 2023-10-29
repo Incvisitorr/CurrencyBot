@@ -1,4 +1,5 @@
 package com.project_group_5.telegram;
+import com.project_group_5.Settings.Settings;
 import com.project_group_5.currency.*;
 import com.project_group_5.currencyUi.ShowCurr;
 import com.project_group_5.telegram.commands.startCommand;
@@ -11,6 +12,8 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -46,30 +49,19 @@ public class CurrencyTelegramBot extends TelegramLongPollingCommandBot {
     @Override
     public void processNonCommandUpdate(Update update) {
         String showCuText;
-        String showCuText1;
-        String showCuText2;
+        Settings settings = new Settings();
         chatId = update.getCallbackQuery().getMessage().getChatId();
         String chatIdForMess=Long.toString(chatId);
+
         if (update.getCallbackQuery().getData().equals("getInfoButton")) {
             SendMessage respMess = new SendMessage();
 
-            //CurrencyPrivate
-            CurrencyPrivate currencyPrivate = CurrencyPrivate.valueOf(CurrencyPrivate.USD.name());
-            double currancyReate = currencyServicePrivate.getRatePrivate(currencyPrivate);
-            showCuText =showCurr.convertPrivate(currancyReate, currencyPrivate);
-
-            //CurrencyMono
-            CurrencyMono currencyMono=CurrencyMono.valueOf(CurrencyMono.USD.name());
-            double currancyReateMono=currencyServiceMono.getRateMono(currencyMono);
-            showCuText1=showCurr.convertMono(currancyReateMono,currencyMono);
-
-            //CurrencyNBU
-            CurrencyNBU currencyNBU=CurrencyNBU.valueOf(CurrencyNBU.EUR.name());
-            double currancyReateNBU=currencyServiceNBU.getRateNBU(currencyNBU);
-            showCuText2=showCurr.convertNBU(currancyReateNBU,currencyNBU);
-
-            String result=showCuText+"\n"+showCuText1+"\n"+showCuText2;
-
+            String result = "";
+            try {
+             result = settings.implementSettings(chatId);
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            }
             respMess.setText(result);
             respMess.setChatId(chatIdForMess);
             try {
@@ -157,6 +149,25 @@ public class CurrencyTelegramBot extends TelegramLongPollingCommandBot {
                 throw new RuntimeException(e);
             }
         }
+
+        if (update.getCallbackQuery().getData().equals("3_sings")){
+            SendMessage respMess = new SendMessage();
+            try {
+                settings.setSettings(chatId, "Number_of_signs", "3");
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            String text = "Кількість знаків встановлено: 3";
+            respMess.setText(text);
+            respMess.setChatId(chatIdForMess);
+            try {
+                execute(respMess);
+            } catch (TelegramApiException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+
         //TODO Переделать на валюты выбора какого банка?
         if (update.getCallbackQuery().getData().equals("Currency")) {
             SendMessage currencyMess = new SendMessage();
@@ -178,6 +189,7 @@ public class CurrencyTelegramBot extends TelegramLongPollingCommandBot {
                 throw new RuntimeException(e);
             }
         }
+
         if (update.getCallbackQuery().getData().equals("Bank")) {
             SendMessage bankMess = new SendMessage();
             InlineKeyboardButton privat = InlineKeyboardButton
@@ -284,7 +296,7 @@ private void sendCurrencyUpdateToSubscribers() {
     // Отправка сообщения с курсом валюты подписчикам     
     SendMessage message = new SendMessage();
     message.setChatId(chatId.toString());   
-    message.setText(showCurr.convertPrivate(exchangeRate, currency));
+    message.setText(showCurr.convertPrivate(exchangeRate, 4, currency));
     try {
        execute(message);    
     } catch (TelegramApiException e) {
