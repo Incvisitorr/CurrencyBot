@@ -24,7 +24,7 @@ public class NBUCurrencyService implements CurrencyServiceNBU {
                     .text();
         } catch (IOException e) {
             e.printStackTrace();
-            throw new IllegalStateException("Can't connect to Mono");
+            throw new IllegalStateException("Can't connect to NBU");
         }
 
         //Convert json => Java Object ТИГ

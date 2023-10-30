@@ -40,6 +40,5 @@ public class PrivatBankCurrencyService implements CurrencyServicePrivate {
                 .map(CurrencyItemPrivate::getBuy)
                 .findFirst()
                 .orElseThrow();
-
     }
 }

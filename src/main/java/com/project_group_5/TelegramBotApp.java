@@ -14,7 +14,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class TelegramBotApp {
-    public static void main(String[] args) {
-        new TelegramBotService();
+    public static void main(String[] args) throws IOException {
+                new TelegramBotService();
     }
 }

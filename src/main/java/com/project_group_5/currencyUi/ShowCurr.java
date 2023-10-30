@@ -16,7 +16,7 @@ public class ShowCurr {
                 .replace("${rate}",String.valueOf(roundedResult));
     }
     public String convertMono(double rate, int n, CurrencyMono currencyMono){
-        String currText = "Курс Монобанка ${currency} до UAH = ${rate}";
+        String currText = "Курс МоноБанку ${currency} до UAH = ${rate}";
 
         double scale = Math.pow(10, n);
         double roundedResult = Math.floor(rate * scale) / scale;
