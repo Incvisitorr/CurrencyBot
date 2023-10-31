@@ -18,19 +18,23 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.project_group_5.Settings.Settings.implementSettings;
+import static com.project_group_5.Settings.Settings.isSettingsFile;
+import static com.project_group_5.Settings.TwoCurrencySettings.*;
+
 
 public class CurrencyTelegramBot extends TelegramLongPollingCommandBot {
     private final CurrencyServicePrivate currencyServicePrivate;
-    private CurrencyServiceMono currencyServiceMono;
-    private CurrencyServiceNBU currencyServiceNBU;
+    private final CurrencyServiceMono currencyServiceMono;
+    private final CurrencyServiceNBU currencyServiceNBU;
     private final ShowCurr showCurr;
     Long chatId;
 
     public CurrencyTelegramBot() {
         //Инициализация сервисов
         currencyServicePrivate = new PrivatBankCurrencyService();
-        currencyServiceMono=new MonoBankCurrencyService();
-        currencyServiceNBU=new NBUCurrencyService();
+        currencyServiceMono = new MonoBankCurrencyService();
+        currencyServiceNBU = new NBUCurrencyService();
         showCurr = new ShowCurr();
         register(new startCommand());
         startCurrencyUpdates();
@@ -51,20 +55,17 @@ public class CurrencyTelegramBot extends TelegramLongPollingCommandBot {
         String showCuText;
         Settings settings = new Settings();
         chatId = update.getCallbackQuery().getMessage().getChatId();
-        String chatIdForMess=Long.toString(chatId);
+        String chatIdForMess = Long.toString(chatId);
 
         if (update.getCallbackQuery().getData().equals("getInfoButton")) {
-            SendMessage respMess = new SendMessage();
-            String result = "";
+            String result;
             try {
-                result = settings.implementSettings(chatId);
+                result = implementSettings(chatId);
             } catch (FileNotFoundException e) {
                 throw new RuntimeException(e);
             }
-            respMess.setText(result);
-            respMess.setChatId(chatIdForMess);
             try {
-                execute(respMess);
+                execute(showTextWithInitialButtons(chatId, result));
             } catch (TelegramApiException e) {
                 throw new RuntimeException(e);
             }
@@ -89,7 +90,7 @@ public class CurrencyTelegramBot extends TelegramLongPollingCommandBot {
                     .build();
             InlineKeyboardButton getNotific = InlineKeyboardButton
                     .builder()
-                    .text("Час оповіщень")
+                    .text("Час сповіщень")
                     .callbackData("Notific")
                     .build();
 
@@ -110,7 +111,6 @@ public class CurrencyTelegramBot extends TelegramLongPollingCommandBot {
             } catch (TelegramApiException e) {
                 throw new RuntimeException(e);
             }
-
         }
 
         if (update.getCallbackQuery().getData().equals("Number_of_signs")) {
@@ -149,57 +149,47 @@ public class CurrencyTelegramBot extends TelegramLongPollingCommandBot {
             }
         }
 
-        if (update.getCallbackQuery().getData().equals("2_sings")){
-            SendMessage respMess = new SendMessage();
+        if (update.getCallbackQuery().getData().equals("2_sings")) {
             try {
                 settings.setSettings(chatId, "Number_of_signs", "2");
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
             String text = "Кількість знаків встановлено: 2";
-            respMess.setText(text);
-            respMess.setChatId(chatIdForMess);
             try {
-                execute(respMess);
+                execute(showTextWithInitialButtons(chatId, text));
             } catch (TelegramApiException e) {
                 throw new RuntimeException(e);
             }
         }
 
-        if (update.getCallbackQuery().getData().equals("3_sings")){
-            SendMessage respMess = new SendMessage();
+        if (update.getCallbackQuery().getData().equals("3_sings")) {
             try {
                 settings.setSettings(chatId, "Number_of_signs", "3");
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
             String text = "Кількість знаків встановлено: 3";
-            respMess.setText(text);
-            respMess.setChatId(chatIdForMess);
             try {
-                execute(respMess);
+                execute(showTextWithInitialButtons(chatId, text));
             } catch (TelegramApiException e) {
                 throw new RuntimeException(e);
             }
         }
 
-        if (update.getCallbackQuery().getData().equals("4_sings")){
-            SendMessage respMess = new SendMessage();
+        if (update.getCallbackQuery().getData().equals("4_sings")) {
             try {
                 settings.setSettings(chatId, "Number_of_signs", "4");
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
             String text = "Кількість знаків встановлено: 4";
-            respMess.setText(text);
-            respMess.setChatId(chatIdForMess);
             try {
-                execute(respMess);
+                execute(showTextWithInitialButtons(chatId, text));
             } catch (TelegramApiException e) {
                 throw new RuntimeException(e);
             }
         }
-
 
         if (update.getCallbackQuery().getData().equals("Currency")) {
             SendMessage currencyMess = new SendMessage();
@@ -230,7 +220,7 @@ public class CurrencyTelegramBot extends TelegramLongPollingCommandBot {
             } catch (TelegramApiException e) {
                 throw new RuntimeException(e);
             }
-
+        }
 
 
 //            List<InlineKeyboardButton> buttonsCurrency = Stream.of(CurrencyPrivate.EUR, CurrencyPrivate.USD)
@@ -250,37 +240,58 @@ public class CurrencyTelegramBot extends TelegramLongPollingCommandBot {
 //            } catch (TelegramApiException e) {
 //                throw new RuntimeException(e);
 //            }
-        }
 
-        if (update.getCallbackQuery().getData().equals("USD")){
-            SendMessage respMess = new SendMessage();
+        if (update.getCallbackQuery().getData().equals("USD")) {
+            String text = "";
             try {
+                if (!isSettingsFile(chatId)) {
                     settings.setSettings(chatId, "Currency", "USD");
+                    text = "Валюту встановлено: Долар США";
+                }else
+                if (isSettingsFile(chatId) && !isSettedTwoCurrencies(chatId)) {
+                    if (isSettedCurrency(chatId, "USD")){
+                        text = "Долар США вже встановлено";
+                    }else{
+                        setSecondCurrency(chatId, "USD");
+                        text = "Другу валюту додано: Долар США";}
+                }else
+                if (isSettedTwoCurrencies(chatId)) {
+                    removeOneCurrency(chatId, "USD");
+                    text = "Залишилась одна валюта: Євро";
+                }
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            String text = "Валюту встановлено: Долар США";
-            respMess.setText(text);
-            respMess.setChatId(chatIdForMess);
             try {
-                execute(respMess);
+                execute(showTextWithInitialButtons(chatId, text));
             } catch (TelegramApiException e) {
                 throw new RuntimeException(e);
             }
         }
 
-        if (update.getCallbackQuery().getData().equals("EUR")){
-            SendMessage respMess = new SendMessage();
+        if (update.getCallbackQuery().getData().equals("EUR")) {
+            String text = "";
             try {
+                if (!isSettingsFile(chatId)) {
                     settings.setSettings(chatId, "Currency", "EUR");
-        } catch (IOException e) {
+                    text = "Валюту встановлено: Євро";
+                }else
+                if (isSettingsFile(chatId) && !isSettedTwoCurrencies(chatId)) {
+                    if (isSettedCurrency(chatId, "EUR")){
+                        text = "Євро вже встановлено";
+                    }else{
+                        setSecondCurrency(chatId, "EUR");
+                        text = "Другу валюту додано: Євро";}
+                }else
+                if (isSettedTwoCurrencies(chatId)) {
+                    removeOneCurrency(chatId, "EUR");
+                    text = "Залишилась одна валюта: Долар США";
+                }
+            } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            String text = "Валюту встановлено: Євро";
-            respMess.setText(text);
-            respMess.setChatId(chatIdForMess);
             try {
-                execute(respMess);
+                execute(showTextWithInitialButtons(chatId, text));
             } catch (TelegramApiException e) {
                 throw new RuntimeException(e);
             }
@@ -323,52 +334,43 @@ public class CurrencyTelegramBot extends TelegramLongPollingCommandBot {
             }
         }
 
-        if (update.getCallbackQuery().getData().equals("privat")){
-            SendMessage respMess = new SendMessage();
+        if (update.getCallbackQuery().getData().equals("privat")) {
             try {
                 settings.setSettings(chatId, "Bank", "privat");
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
             String text = "Банк встановлено: ПриватБанк";
-            respMess.setText(text);
-            respMess.setChatId(chatIdForMess);
             try {
-                execute(respMess);
+                execute(showTextWithInitialButtons(chatId, text));
             } catch (TelegramApiException e) {
                 throw new RuntimeException(e);
             }
         }
 
-        if (update.getCallbackQuery().getData().equals("mono")){
-            SendMessage respMess = new SendMessage();
+        if (update.getCallbackQuery().getData().equals("mono")) {
             try {
                 settings.setSettings(chatId, "Bank", "mono");
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
             String text = "Банк встановлено: МоноБанк";
-            respMess.setText(text);
-            respMess.setChatId(chatIdForMess);
             try {
-                execute(respMess);
+                execute(showTextWithInitialButtons(chatId, text));
             } catch (TelegramApiException e) {
                 throw new RuntimeException(e);
             }
         }
 
-        if (update.getCallbackQuery().getData().equals("nbu")){
-            SendMessage respMess = new SendMessage();
+        if (update.getCallbackQuery().getData().equals("nbu")) {
             try {
                 settings.setSettings(chatId, "Bank", "nbu");
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
             String text = "Банк встановлено: Національний Банк України";
-            respMess.setText(text);
-            respMess.setChatId(chatIdForMess);
             try {
-                execute(respMess);
+                execute(showTextWithInitialButtons(chatId, text));
             } catch (TelegramApiException e) {
                 throw new RuntimeException(e);
             }
@@ -377,35 +379,35 @@ public class CurrencyTelegramBot extends TelegramLongPollingCommandBot {
         if (update.getCallbackQuery().getData().equals("Notific")) {
             SendMessage notificMess = new SendMessage();
 
-            ReplyKeyboardMarkup keyboardMarkup=new ReplyKeyboardMarkup();
-            List<KeyboardRow> keyNotific=new ArrayList<>();
+            ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+            List<KeyboardRow> keyNotific = new ArrayList<>();
 
-            KeyboardRow row=new KeyboardRow();
+            KeyboardRow row = new KeyboardRow();
             row.add("9");
             row.add("10");
             row.add("11");
             keyNotific.add(row);
 
-            row=new KeyboardRow();
+            row = new KeyboardRow();
             row.add("12");
             row.add("13");
             row.add("14");
             keyNotific.add(row);
 
-            row=new KeyboardRow();
+            row = new KeyboardRow();
             row.add("15");
             row.add("16");
             row.add("17");
             keyNotific.add(row);
 
-            row=new KeyboardRow();
+            row = new KeyboardRow();
             row.add("18");
             row.add("Вимкнути повідомлення");
             keyNotific.add(row);
 
             keyboardMarkup.setKeyboard(keyNotific);
 
-            showCuText = "Расписание";
+            showCuText = "Час сповіщень";
             notificMess.setText(showCuText);
             notificMess.setReplyMarkup(keyboardMarkup);
             notificMess.setChatId(chatIdForMess);
@@ -416,37 +418,73 @@ public class CurrencyTelegramBot extends TelegramLongPollingCommandBot {
             }
         }
     }
-private void startCurrencyUpdates() {   
-    Timer timer = new Timer();
-    int notificationHour = 9; // Установка времени рассылки (9:00 утра) 
-    long interval = 60 * 60 * 1000; // Интервал рассылки (1 час) 
-    Date firstExecutionTime = calculateFirstExecutionTime(notificationHour);
-    timer.scheduleAtFixedRate(new TimerTask() {
-       @Override      
-        public void run() {
-          // В этом методе получаем актуальные курсы и отправляем их подписчикам           
-            sendCurrencyUpdateToSubscribers();
-       }    }, firstExecutionTime, interval);
-}
-private Date calculateFirstExecutionTime(int notificationHour) {    
-    long currentTime = System.currentTimeMillis();
-    long todayNotificationTime = currentTime - (currentTime % 86400000) + (notificationHour * 3600000); // 86400000 миллисекунд в сутках, 3600000 миллисекунд в часе 
-    if (todayNotificationTime <= currentTime) {       
-        todayNotificationTime += 86400000; // Если указанное время уже прошло сегодня, переносим на завтра 
-    }
-    return new Date(todayNotificationTime);
-}
-private void sendCurrencyUpdateToSubscribers() {
-        CurrencyPrivate currency = CurrencyPrivate.USD;
-    double exchangeRate = currencyServicePrivate.getRatePrivate(currency);//Выбор банка
-    // Отправка сообщения с курсом валюты подписчикам     
-    SendMessage message = new SendMessage();
-    message.setChatId(chatId.toString());   
-    message.setText(showCurr.convertPrivate(exchangeRate, 4, currency));
-    try {
-       execute(message);    
-    } catch (TelegramApiException e) {
-       e.printStackTrace();    
-    }
-}}
 
+    private void startCurrencyUpdates() {
+        Timer timer = new Timer();
+        int notificationHour = 9; // Установка времени рассылки (9:00 утра)
+        long interval = 60 * 60 * 1000; // Интервал рассылки (1 час)
+        Date firstExecutionTime = calculateFirstExecutionTime(notificationHour);
+        timer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                // В этом методе получаем актуальные курсы и отправляем их подписчикам
+                try {
+                    sendCurrencyUpdateToSubscribers();
+                } catch (FileNotFoundException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }, firstExecutionTime, interval);
+    }
+
+    private Date calculateFirstExecutionTime(int notificationHour) {
+        long currentTime = System.currentTimeMillis();
+        long todayNotificationTime = currentTime - (currentTime % 86400000) + (notificationHour * 3600000); // 86400000 миллисекунд в сутках, 3600000 миллисекунд в часе
+        if (todayNotificationTime <= currentTime) {
+            todayNotificationTime += 86400000; // Если указанное время уже прошло сегодня, переносим на завтра
+        }
+        return new Date(todayNotificationTime);
+    }
+
+    private void sendCurrencyUpdateToSubscribers() throws FileNotFoundException {
+//        CurrencyPrivate currency = CurrencyPrivate.USD;
+//        double exchangeRate = currencyServicePrivate.getRatePrivate(currency);//Выбор банка
+        // Отправка сообщения с курсом валюты подписчикам
+        SendMessage message = new SendMessage();
+//        message.setChatId(chatId.toString());
+        message.setText(implementSettings(chatId));
+        try {
+            execute(message);
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public SendMessage showTextWithInitialButtons(long chatId, String text) {
+        SendMessage message = new SendMessage();
+        InlineKeyboardButton getInfoButton = InlineKeyboardButton
+                .builder()
+                .text("Отримати інфо")
+                .callbackData("getInfoButton")
+                .build();
+
+        InlineKeyboardButton settings = InlineKeyboardButton
+                .builder()
+                .text("Налаштування")
+                .callbackData("settings")
+                .build();
+
+        List<InlineKeyboardButton> InitialButtons = Stream.of(getInfoButton, settings)
+                .map(it -> InlineKeyboardButton.builder().text(it.getText()).callbackData(it.getCallbackData()).build())
+                .collect(Collectors.toList());
+
+        InlineKeyboardMarkup keyboard = InlineKeyboardMarkup
+                .builder()
+                .keyboard(Collections.singleton(InitialButtons))
+                .build();
+        message.setText(text);
+        message.setReplyMarkup(keyboard);
+        message.setChatId(Long.toString(chatId));
+        return message;
+    }
+}
