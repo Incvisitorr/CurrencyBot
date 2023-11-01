@@ -18,8 +18,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.project_group_5.Settings.Settings.implementSettings;
-import static com.project_group_5.Settings.Settings.isSettingsFile;
+import static com.project_group_5.Settings.Settings.*;
 import static com.project_group_5.Settings.TwoCurrencySettings.*;
 
 
@@ -29,6 +28,8 @@ public class CurrencyTelegramBot extends TelegramLongPollingCommandBot {
     private final CurrencyServiceNBU currencyServiceNBU;
     private final ShowCurr showCurr;
     Long chatId;
+
+
 
     public CurrencyTelegramBot() {
         //Инициализация сервисов
@@ -115,21 +116,36 @@ public class CurrencyTelegramBot extends TelegramLongPollingCommandBot {
 
         if (update.getCallbackQuery().getData().equals("Number_of_signs")) {
             SendMessage singsMess = new SendMessage();
-            InlineKeyboardButton sings_2 = InlineKeyboardButton
-                    .builder()
-                    .text("-2")
-                    .callbackData("2_sings")
-                    .build();
-            InlineKeyboardButton sings_3 = InlineKeyboardButton
-                    .builder()
-                    .text("-3")
-                    .callbackData("3_sings")
-                    .build();
-            InlineKeyboardButton sings_4 = InlineKeyboardButton
-                    .builder()
-                    .text("-4")
-                    .callbackData("4_sings")
-                    .build();
+            InlineKeyboardButton sings_2 = null;
+            try {
+                sings_2 = InlineKeyboardButton
+                        .builder()
+                        .text(getTextNumberOfSigns(chatId, "-2", "2"))
+                        .callbackData("2_sings")
+                        .build();
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+            InlineKeyboardButton sings_3 = null;
+            try {
+                sings_3 = InlineKeyboardButton
+                        .builder()
+                        .text(getTextNumberOfSigns(chatId, "-3", "3"))
+                        .callbackData("3_sings")
+                        .build();
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+            InlineKeyboardButton sings_4 = null;
+            try {
+                sings_4 = InlineKeyboardButton
+                        .builder()
+                        .text(getTextNumberOfSigns(chatId, "-4", "4"))
+                        .callbackData("4_sings")
+                        .build();
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            }
             List<InlineKeyboardButton> buttonsOfSings = Stream.of(sings_2, sings_3, sings_4)
                     .map(it -> InlineKeyboardButton.builder().text(it.getText()).callbackData(it.getCallbackData()).build())
                     .collect(Collectors.toList());
@@ -193,16 +209,26 @@ public class CurrencyTelegramBot extends TelegramLongPollingCommandBot {
 
         if (update.getCallbackQuery().getData().equals("Currency")) {
             SendMessage currencyMess = new SendMessage();
-            InlineKeyboardButton usd = InlineKeyboardButton
-                    .builder()
-                    .text("USD")
-                    .callbackData("USD")
-                    .build();
-            InlineKeyboardButton eur = InlineKeyboardButton
-                    .builder()
-                    .text("EUR")
-                    .callbackData("EUR")
-                    .build();
+            InlineKeyboardButton usd = null;
+            try {
+                usd = InlineKeyboardButton
+                        .builder()
+                        .text(getTextForUsd(chatId, "USD"))
+                        .callbackData("USD")
+                        .build();
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+            InlineKeyboardButton eur = null;
+            try {
+                eur = InlineKeyboardButton
+                        .builder()
+                        .text(getTextForEuro(chatId, "EUR"))
+                        .callbackData("EUR")
+                        .build();
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            }
             List<InlineKeyboardButton> buttonsOfSings = Stream.of(usd, eur)
                     .map(it -> InlineKeyboardButton.builder().text(it.getText()).callbackData(it.getCallbackData()).build())
                     .collect(Collectors.toList());
@@ -299,21 +325,36 @@ public class CurrencyTelegramBot extends TelegramLongPollingCommandBot {
 
         if (update.getCallbackQuery().getData().equals("Bank")) {
             SendMessage bankMess = new SendMessage();
-            InlineKeyboardButton privat = InlineKeyboardButton
-                    .builder()
-                    .text("Приват Банк")
-                    .callbackData("privat")
-                    .build();
-            InlineKeyboardButton mono = InlineKeyboardButton
-                    .builder()
-                    .text("Моно Банк")
-                    .callbackData("mono")
-                    .build();
-            InlineKeyboardButton nbu = InlineKeyboardButton
-                    .builder()
-                    .text("НБУ")
-                    .callbackData("nbu")
-                    .build();
+            InlineKeyboardButton privat = null;
+            try {
+                privat = InlineKeyboardButton
+                        .builder()
+                        .text(getTextForBanks(chatId, "Приват Банк", "privat"))
+                        .callbackData("privat")
+                        .build();
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+            InlineKeyboardButton mono = null;
+            try {
+                mono = InlineKeyboardButton
+                        .builder()
+                        .text(getTextForBanks(chatId, "Моно Банк", "mono"))
+                        .callbackData("mono")
+                        .build();
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+            InlineKeyboardButton nbu = null;
+            try {
+                nbu = InlineKeyboardButton
+                        .builder()
+                        .text(getTextForBanks(chatId,  "НБУ", "nbu"))
+                        .callbackData("nbu")
+                        .build();
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            }
             List<InlineKeyboardButton> buttonsOfBanks = Stream.of(privat, mono, nbu)
                     .map(it -> InlineKeyboardButton.builder().text(it.getText()).callbackData(it.getCallbackData()).build())
                     .collect(Collectors.toList());

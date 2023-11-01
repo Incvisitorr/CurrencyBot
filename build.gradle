@@ -16,6 +16,10 @@ dependencies {
     // https://mvnrepository.com/artifact/org.telegram/telegrambots
     implementation group: 'org.telegram', name: 'telegrambots', version: '6.8.0'
 
+    // https://mvnrepository.com/artifact/com.vdurmont/emoji-java
+    implementation group: 'com.vdurmont', name: 'emoji-java', version: '5.1.1'
+
+
     // https://mvnrepository.com/artifact/org.jsoup/jsoup
     implementation group: 'org.jsoup', name: 'jsoup', version: '1.16.2'
 
