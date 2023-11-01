@@ -6,7 +6,9 @@ import com.project_group_5.currencyUi.ShowCurr;
 import java.io.*;
 import java.util.*;
 
+import static com.project_group_5.Settings.Settings.isSettingsFile;
 import static com.project_group_5.Settings.Settings.makeMap;
+import static com.project_group_5.Settings.TwoCurrencySettings.removeOneCurrency;
 
 public class TwoCurrencySettings {
 
@@ -44,6 +46,41 @@ public class TwoCurrencySettings {
         return checked;
     }
 
+    public String test(long chatId) throws IOException {
+        Settings settings = new Settings();
+        String text = "";
+        if (!isSettingsFile(chatId)) {
+            settings.setSettings(chatId, "Currency", "USD");
+            text = "Added USD";
+        }else
+        if (isSettingsFile(chatId) && !isSettedTwoCurrencies(chatId)) {
+            if (isSettedCurrency(chatId, "USD")){
+                text = "USD is been setted before";
+            }else{
+                setSecondCurrency(chatId, "USD");
+                text = "Second currency added: USD";}
+        }else
+        if (isSettedTwoCurrencies(chatId)) {
+            removeOneCurrency(chatId, "USD");
+            text = "One currency left: EUR";
+        }
+//            if (!isSettingsFile(chatId)) {
+//                settings.setSettings(chatId, "Currency", "EUR");
+//                text = "Euro setted";
+//            } else if (isSettingsFile(chatId) && !isSettedTwoCurrencies(chatId)) {
+//                if (isSettedCurrency(chatId, "EUR")) {
+//                    text = "EUR already been setted";
+//                } else {
+//                    setSecondCurrency(chatId, "EUR");
+//                    text = "Second currency edded: EUR";
+//                }
+//            } else if (isSettedTwoCurrencies(chatId)) {
+//                removeOneCurrency(chatId, "EUR");
+//                text = "One currency left: USD";
+//            }
+            return text;
+        }
+
     // забираємо одну з валют за вибором користувача
     public static void removeOneCurrency(long chatId, String value) throws IOException {
         Map<String, String> settings = makeMap(chatId);
@@ -62,8 +99,7 @@ public class TwoCurrencySettings {
     //надаємо інформацію якщо встановлено дві валюти
     public static String showTwoCurrenciesResult(long chatId) throws FileNotFoundException {
         ShowCurr showCurr = new ShowCurr();
-        Settings settings = new Settings();
-        String firstCurrencyResult = settings.implementOneCurrencySettings(chatId);
+        String firstCurrencyResult = Settings.implementOneCurrencySettings(chatId);
         Map<String, String> settingsMap = makeMap(chatId);
         String result = "";
 
@@ -79,10 +115,10 @@ public class TwoCurrencySettings {
             if (settingsMap.get("Bank").equals("mono")) {
                 MonoBankCurrencyService monoBankCurrencyService = new MonoBankCurrencyService();
                 double rate = monoBankCurrencyService
-                        .getRateMono(settings.currencyMonoHandler(settingsMap.get("Currency1")));
+                        .getRateMono(Settings.currencyMonoHandler(settingsMap.get("Currency1")));
                 result = firstCurrencyResult + System.lineSeparator() +
                         showCurr.convertMono(rate, Integer.parseInt(settingsMap.get("Number_of_signs")),
-                        settings.currencyMonoHandler(settingsMap.get("Currency1")));
+                        Settings.currencyMonoHandler(settingsMap.get("Currency1")));
 
             }
             if (settingsMap.get("Bank").equals("nbu")) {
