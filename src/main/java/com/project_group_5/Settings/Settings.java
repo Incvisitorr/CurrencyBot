@@ -2,6 +2,7 @@ package com.project_group_5.Settings;
 
 import com.project_group_5.currency.*;
 import com.project_group_5.currencyUi.ShowCurr;
+import com.vdurmont.emoji.EmojiParser;
 
 import java.io.*;
 import java.util.*;
@@ -11,7 +12,8 @@ import static com.project_group_5.Settings.TwoCurrencySettings.*;
 
 public class Settings {
     private static final Map<String, String> defoultMap = new HashMap<>();
-    private static final Map<String, String> settingsMap = new HashMap<>();
+    private static Map<String, String> settingsMap = new HashMap<>();
+    private static final String emoji = "✅";
 
     public static Map<String, String> getDefoultMap() {
         defoultMap.put("Bank", "privat");
@@ -21,15 +23,18 @@ public class Settings {
     }
 
     public static Map<String, String> makeMap(long chatId) throws FileNotFoundException {
-        File file = new File("chatId" + chatId + "Settings");
-        FileReader reader = new FileReader(file);
-        Scanner scanner = new Scanner(reader);
-        String[] row = scanner.nextLine()
-                .replace("{", "").replace("}", "").split(", ");
-        for (String s : row) {
-            String[] keyValue = s.split("=");
-            settingsMap.put(keyValue[0], keyValue[1]);
-        }
+        if (isSettingsFile(chatId)) {
+            File file = new File("chatId" + chatId + "Settings");
+            FileReader reader = new FileReader(file);
+            Scanner scanner = new Scanner(reader);
+            String[] row = scanner.nextLine()
+                    .replace("{", "").replace("}", "").split(", ");
+            for (String s : row) {
+                String[] keyValue = s.split("=");
+                settingsMap.put(keyValue[0], keyValue[1]);
+            }
+
+        }else settingsMap = new HashMap<>(getDefoultMap());
         return settingsMap;
     }
 
@@ -62,7 +67,9 @@ public class Settings {
 
     public static String implementSettings(long chatId) throws IOException {
         String result;
-        if (!isSettingsFile(chatId) || !isSettedTwoCurrencies(chatId)) {
+        if (!isSettingsFile(chatId)) {
+            result = implementOneCurrencySettings (chatId);
+        } else if (!isSettedTwoCurrencies(chatId)) {
             renameCurrency(chatId);
             result = implementOneCurrencySettings(chatId);
         } else {
@@ -74,10 +81,10 @@ public class Settings {
 
     public static void makeDifferentCurrencies(long chatId) throws IOException {
         Map<String, String> map = makeMap(chatId);
-        if (map.get("Currency").equals(map.get("Currency1"))){
-            if (map.get("Currency").equals("USD")){
+        if (map.get("Currency").equals(map.get("Currency1"))) {
+            if (map.get("Currency").equals("USD")) {
                 map.replace("Currency1", "USD", "EUR");
-            }else map.replace("Currency1", "EUR", "USD");
+            } else map.replace("Currency1", "EUR", "USD");
         }
         BufferedWriter writer = new BufferedWriter(new FileWriter("chatId" + chatId + "Settings"));
         writer.write(map.toString());
@@ -133,6 +140,67 @@ public class Settings {
             currencyMono = CurrencyMono.EUR;
         }
         return currencyMono;
+    }
+
+    public static String getTextNumberOfSigns(long chatId, String name, String value) throws FileNotFoundException {
+        Map<String, String> map = makeMap(chatId);
+        String text = name;
+        if (map.get("Number_of_signs").equals(value)) {
+            text = emoji + "-2";
+        } else if (map.get("Number_of_signs").equals(value)) {
+            text = emoji + "-3";
+        } else if (map.get("Number_of_signs").equals(value)) {
+            text = emoji + "-4";
+        }
+        return text;
+    }
+
+
+    public static String getTextForUsd(long chatId, String value) throws FileNotFoundException {
+        Map<String, String> map = makeMap(chatId);
+        String text = value;
+        if (map.containsKey("Currency") && map.containsKey("Currency1")) {
+            if (map.get("Currency").equals(value)) {
+                text = emoji + "USD";
+            } else if (map.get("Currency1").equals(value)) {
+                text = emoji + "USD";
+            }
+        } else if (map.containsKey("Currency") && !map.containsKey("Currency1") && map.get("Currency").equals(value)) {
+                text = emoji + "USD";
+        } else if (!map.containsKey("Currency") && map.containsKey("Currency1") && map.get("Currency1").equals(value)) {
+                text = emoji + "USD";
+        }
+        return text;
+    }
+
+    public static String getTextForEuro(long chatId, String value) throws FileNotFoundException {
+        Map<String, String> map = makeMap(chatId);
+        String text = value;
+        if (map.containsKey("Currency") && map.containsKey("Currency1")) {
+            if (map.get("Currency").equals(value)) {
+                text = emoji + "EUR";
+            } else if (map.get("Currency1").equals(value)) {
+                text = emoji + "EUR";
+            }
+        } else if (map.containsKey("Currency") && !map.containsKey("Currency1") && map.get("Currency").equals(value)) {
+                text = emoji + "EUR";
+        } else if (!map.containsKey("Currency") && map.containsKey("Currency1") && map.get("Currency1").equals(value)) {
+                text = emoji + "EUR";
+        }
+        return text;
+    }
+
+    public static String getTextForBanks(long chatId, String name, String value) throws FileNotFoundException {
+        Map<String, String> map = makeMap(chatId);
+        String text = name;
+        if (map.get("Bank").equals(value)) {
+            text = emoji + "Приват Банк";
+        } else if (map.get("Bank").equals(value)) {
+            text = emoji + "Моно Банк";
+        } else if (map.get("Bank").equals(value)) {
+            text = emoji + "НБУ";
+        }
+        return text;
     }
 }
 

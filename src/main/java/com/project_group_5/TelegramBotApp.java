@@ -5,6 +5,7 @@ import com.project_group_5.Settings.Settings;
 import com.project_group_5.Settings.TwoCurrencySettings;
 import com.project_group_5.currency.*;
 import com.project_group_5.currencyUi.ShowCurr;
+import com.project_group_5.telegram.CurrencyTelegramBot;
 import com.project_group_5.telegram.TelegramBotService;
 import org.jsoup.Jsoup;
 
@@ -18,7 +19,9 @@ import static com.project_group_5.Settings.Settings.*;
 import static com.project_group_5.Settings.TwoCurrencySettings.*;
 
 public class TelegramBotApp {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
+//        System.out.println(implementSettings(153944792));
+
         new TelegramBotService();
     }
 }
