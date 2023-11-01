@@ -417,6 +417,28 @@ public class CurrencyTelegramBot extends TelegramLongPollingCommandBot {
                 throw new RuntimeException(e);
             }
         }
+
+           if (update.getCallbackQuery().getData().equals("DisableNotification")) {
+             SendMessage disableNotificationMess = new SendMessage();
+             try {
+                 settings.setSettings(chatId, "DisableNotification", "true");
+             } catch (IOException e) {
+                 throw new RuntimeException(e);
+             }
+
+             String text = "Сповіщення вимкнуті";
+             disableNotificationMess.setText(text);
+             disableNotificationMess.setChatId(chatIdForMess);
+
+             ReplyKeyboardRemove replyKeyboardRemove = new ReplyKeyboardRemove();
+             disableNotificationMess.setReplyMarkup(replyKeyboardRemove);
+
+             try {
+                 execute(disableNotificationMess);
+             } catch (TelegramApiException e) {
+                 throw new RuntimeException(e);
+             }
+         }    
     }
 
     private void startCurrencyUpdates() {
