@@ -430,8 +430,6 @@ public class CurrencyTelegramBot extends TelegramLongPollingCommandBot {
              disableNotificationMess.setText(text);
              disableNotificationMess.setChatId(chatIdForMess);
 
-             ReplyKeyboardRemove replyKeyboardRemove = new ReplyKeyboardRemove();
-             disableNotificationMess.setReplyMarkup(replyKeyboardRemove);
 
              try {
                  execute(disableNotificationMess);
@@ -442,7 +440,7 @@ public class CurrencyTelegramBot extends TelegramLongPollingCommandBot {
     }
 
     private void startCurrencyUpdates() {
-        Timer timer = new Timer();
+        Timer timer = new Timer();    
         int notificationHour = 9; // Установка времени рассылки (9:00 утра)
         long interval = 60 * 60 * 1000; // Интервал рассылки (1 час)
         Date firstExecutionTime = calculateFirstExecutionTime(notificationHour);
