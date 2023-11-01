@@ -38,7 +38,6 @@ public class CurrencyTelegramBot extends TelegramLongPollingCommandBot {
         currencyServiceNBU = new NBUCurrencyService();
         showCurr = new ShowCurr();
         register(new startCommand());
-        startCurrencyUpdates();
     }
 
     @Override
@@ -62,6 +61,7 @@ public class CurrencyTelegramBot extends TelegramLongPollingCommandBot {
             String result;
             try {
                 result = implementSettings(chatId);
+                startCurrencyUpdates(9);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -273,15 +273,14 @@ public class CurrencyTelegramBot extends TelegramLongPollingCommandBot {
                 if (!isSettingsFile(chatId)) {
                     settings.setSettings(chatId, "Currency", "USD");
                     text = "Валюту встановлено: Долар США";
-                }else
-                if (isSettingsFile(chatId) && !isSettedTwoCurrencies(chatId)) {
-                    if (isSettedCurrency(chatId, "USD")){
+                } else if (isSettingsFile(chatId) && !isSettedTwoCurrencies(chatId)) {
+                    if (isSettedCurrency(chatId, "USD")) {
                         text = "Долар США вже встановлено";
-                    }else{
+                    } else {
                         setSecondCurrency(chatId, "USD");
-                        text = "Другу валюту додано: Долар США";}
-                }else
-                if (isSettedTwoCurrencies(chatId)) {
+                        text = "Другу валюту додано: Долар США";
+                    }
+                } else if (isSettedTwoCurrencies(chatId)) {
                     removeOneCurrency(chatId, "USD");
                     text = "Залишилась одна валюта: Євро";
                 }
@@ -301,15 +300,14 @@ public class CurrencyTelegramBot extends TelegramLongPollingCommandBot {
                 if (!isSettingsFile(chatId)) {
                     settings.setSettings(chatId, "Currency", "EUR");
                     text = "Валюту встановлено: Євро";
-                }else
-                if (isSettingsFile(chatId) && !isSettedTwoCurrencies(chatId)) {
-                    if (isSettedCurrency(chatId, "EUR")){
+                } else if (isSettingsFile(chatId) && !isSettedTwoCurrencies(chatId)) {
+                    if (isSettedCurrency(chatId, "EUR")) {
                         text = "Євро вже встановлено";
-                    }else{
+                    } else {
                         setSecondCurrency(chatId, "EUR");
-                        text = "Другу валюту додано: Євро";}
-                }else
-                if (isSettedTwoCurrencies(chatId)) {
+                        text = "Другу валюту додано: Євро";
+                    }
+                } else if (isSettedTwoCurrencies(chatId)) {
                     removeOneCurrency(chatId, "EUR");
                     text = "Залишилась одна валюта: Долар США";
                 }
@@ -349,7 +347,7 @@ public class CurrencyTelegramBot extends TelegramLongPollingCommandBot {
             try {
                 nbu = InlineKeyboardButton
                         .builder()
-                        .text(getTextForBanks(chatId,  "НБУ", "nbu"))
+                        .text(getTextForBanks(chatId, "НБУ", "nbu"))
                         .callbackData("nbu")
                         .build();
             } catch (FileNotFoundException e) {
@@ -420,37 +418,54 @@ public class CurrencyTelegramBot extends TelegramLongPollingCommandBot {
         if (update.getCallbackQuery().getData().equals("Notific")) {
             SendMessage notificMess = new SendMessage();
 
-            ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
-            List<KeyboardRow> keyNotific = new ArrayList<>();
+            InlineKeyboardButton notificationTime = InlineKeyboardButton
+                    .builder()
+                    .text("Час сповіщень")
+                    .callbackData("NotificationTime")
+                    .build();
+            InlineKeyboardButton disableNotification = InlineKeyboardButton
+                    .builder()
+                    .text("Вимкнути сповіщення")
+                    .callbackData("DisableNotification")
+                    .build();
+            List<InlineKeyboardButton> buttonsOfStart = Stream.of(notificationTime, disableNotification)
+                    .map(it -> InlineKeyboardButton.builder().text(it.getText()).callbackData(it.getCallbackData()).build())
+                    .collect(Collectors.toList());
 
-            KeyboardRow row = new KeyboardRow();
-            row.add("9");
-            row.add("10");
-            row.add("11");
-            keyNotific.add(row);
-
-            row = new KeyboardRow();
-            row.add("12");
-            row.add("13");
-            row.add("14");
-            keyNotific.add(row);
-
-            row = new KeyboardRow();
-            row.add("15");
-            row.add("16");
-            row.add("17");
-            keyNotific.add(row);
-
-            row = new KeyboardRow();
-            row.add("18");
-            row.add("Вимкнути повідомлення");
-            keyNotific.add(row);
-
-            keyboardMarkup.setKeyboard(keyNotific);
+//            ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+//            List<KeyboardRow> keyNotific = new ArrayList<>();
+//
+//            KeyboardRow row = new KeyboardRow();
+//            row.add("9");
+//            row.add("10");
+//            row.add("11");
+//            keyNotific.add(row);
+//
+//            row = new KeyboardRow();
+//            row.add("12");
+//            row.add("13");
+//            row.add("14");
+//            keyNotific.add(row);
+//
+//            row = new KeyboardRow();
+//            row.add("15");
+//            row.add("16");
+//            row.add("17");
+//            keyNotific.add(row);
+//
+//            row = new KeyboardRow();
+//            row.add("18");
+//            row.add("Вимкнути повідомлення");
+//            keyNotific.add(row);
+//
+            InlineKeyboardMarkup keyboardSings = InlineKeyboardMarkup
+                    .builder()
+                    .keyboard(Collections.singleton(buttonsOfStart))
+                    .build();
 
             showCuText = "Час сповіщень";
             notificMess.setText(showCuText);
-            notificMess.setReplyMarkup(keyboardMarkup);
+            notificMess.setReplyMarkup(keyboardSings);
             notificMess.setChatId(chatIdForMess);
             try {
                 execute(notificMess);
@@ -459,48 +474,228 @@ public class CurrencyTelegramBot extends TelegramLongPollingCommandBot {
             }
         }
 
-           if (update.getCallbackQuery().getData().equals("DisableNotification")) {
-             SendMessage disableNotificationMess = new SendMessage();
-             try {
-                 settings.setSettings(chatId, "DisableNotification", "true");
-             } catch (IOException e) {
-                 throw new RuntimeException(e);
-             }
+        if (update.getCallbackQuery().getData().equals("NotificationTime")) {
+            SendMessage currencyMess = new SendMessage();
+            InlineKeyboardButton nine = InlineKeyboardButton
+                        .builder()
+                        .text("9")
+                        .callbackData("9")
+                        .build();
+                        InlineKeyboardButton eur = null;
+            InlineKeyboardButton ten = InlineKeyboardButton
+                        .builder()
+                        .text("10")
+                        .callbackData("10")
+                        .build();
+            InlineKeyboardButton eleven = InlineKeyboardButton
+                    .builder()
+                    .text("11")
+                    .callbackData("11")
+                    .build();
+            InlineKeyboardButton twelve = InlineKeyboardButton
+                    .builder()
+                    .text("12")
+                    .callbackData("12")
+                    .build();
+            InlineKeyboardButton thr = InlineKeyboardButton
+                    .builder()
+                    .text("13")
+                    .callbackData("13")
+                    .build();
+            InlineKeyboardButton four = InlineKeyboardButton
+                    .builder()
+                    .text("14")
+                    .callbackData("14")
+                    .build();
+            InlineKeyboardButton fift = InlineKeyboardButton
+                    .builder()
+                    .text("15")
+                    .callbackData("15")
+                    .build();
+            InlineKeyboardButton sixt = InlineKeyboardButton
+                    .builder()
+                    .text("16")
+                    .callbackData("16")
+                    .build();
+            InlineKeyboardButton sevent = InlineKeyboardButton
+                    .builder()
+                    .text("17")
+                    .callbackData("17")
+                    .build();
+            InlineKeyboardButton eight = InlineKeyboardButton
+                    .builder()
+                    .text("18")
+                    .callbackData("18")
+                    .build();
 
-             String text = "Сповіщення вимкнуті";
-             disableNotificationMess.setText(text);
-             disableNotificationMess.setChatId(chatIdForMess);
+
+            List<InlineKeyboardButton> buttonsOfSings = Stream.of(nine, ten, eleven, twelve, thr, four, fift, sixt, sevent, eight)
+                    .map(it -> InlineKeyboardButton.builder().text(it.getText()).callbackData(it.getCallbackData()).build())
+                    .collect(Collectors.toList());
+
+            InlineKeyboardMarkup keyboardCurrencies = InlineKeyboardMarkup
+                    .builder()
+                    .keyboard(Collections.singleton(buttonsOfSings))
+                    .build();
+            showCuText = "Час сповіщень";
+            currencyMess.setText(showCuText);
+            currencyMess.setReplyMarkup(keyboardCurrencies);
+            currencyMess.setChatId(chatIdForMess);
+            try {
+                execute(currencyMess);
+            } catch (TelegramApiException e) {
+                throw new RuntimeException(e);
+            }
+        }
 
 
-             try {
-                 execute(disableNotificationMess);
-             } catch (TelegramApiException e) {
-                 throw new RuntimeException(e);
-             }
-         }    
+        if (update.getCallbackQuery().getData().equals("9")) {
+            String text = "Час сповіщень встановлено: 9 годин";
+            startCurrencyUpdates(9);
+            try {
+                execute(showTextWithInitialButtons(chatId, text));
+            } catch (TelegramApiException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        if (update.getCallbackQuery().getData().equals("10")) {
+            String text = "Час сповіщень встановлено: 10 годин";
+            startCurrencyUpdates(10);
+            try {
+                execute(showTextWithInitialButtons(chatId, text));
+            } catch (TelegramApiException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        if (update.getCallbackQuery().getData().equals("11")) {
+            String text = "Час сповіщень встановлено: 11 годин";
+            startCurrencyUpdates(11);
+            try {
+                execute(showTextWithInitialButtons(chatId, text));
+            } catch (TelegramApiException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        if (update.getCallbackQuery().getData().equals("12")) {
+            String text = "Час сповіщень встановлено: 12 годин";
+            startCurrencyUpdates(12);
+            try {
+                execute(showTextWithInitialButtons(chatId, text));
+            } catch (TelegramApiException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        if (update.getCallbackQuery().getData().equals("13")) {
+            String text = "Час сповіщень встановлено: 13 годин";
+            startCurrencyUpdates(13);
+            try {
+                execute(showTextWithInitialButtons(chatId, text));
+            } catch (TelegramApiException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        if (update.getCallbackQuery().getData().equals("14")) {
+            String text = "Час сповіщень встановлено: 14 годин";
+            startCurrencyUpdates(14);
+            try {
+                execute(showTextWithInitialButtons(chatId, text));
+            } catch (TelegramApiException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        if (update.getCallbackQuery().getData().equals("15")) {
+            String text = "Час сповіщень встановлено: 15 годин";
+            startCurrencyUpdates(15);
+            try {
+                execute(showTextWithInitialButtons(chatId, text));
+            } catch (TelegramApiException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        if (update.getCallbackQuery().getData().equals("16")) {
+            String text = "Час сповіщень встановлено: 16 годин";
+            startCurrencyUpdates(16);
+            try {
+                execute(showTextWithInitialButtons(chatId, text));
+            } catch (TelegramApiException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        if (update.getCallbackQuery().getData().equals("17")) {
+            String text = "Час сповіщень встановлено: 17 годин";
+            startCurrencyUpdates(17);
+            try {
+                execute(showTextWithInitialButtons(chatId, text));
+            } catch (TelegramApiException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        if (update.getCallbackQuery().getData().equals("18")) {
+            String text = "Час сповіщень встановлено: 18 годин";
+            startCurrencyUpdates(18);
+            try {
+                execute(showTextWithInitialButtons(chatId, text));
+            } catch (TelegramApiException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        if (update.getCallbackQuery().getData().equals("11")) {
+            String text = "Час сповіщень встановлено: 11 годин";
+            startCurrencyUpdates(11);
+            try {
+                execute(showTextWithInitialButtons(chatId, text));
+            } catch (TelegramApiException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        if (update.getCallbackQuery().getData().equals("DisableNotification")) {
+            SendMessage disableNotificationMess = new SendMessage();
+            startCurrencyUpdates(0);
+            String text = "Сповіщення вимкнуті";
+            disableNotificationMess.setText(text);
+            disableNotificationMess.setChatId(chatIdForMess);
+            try {
+                execute(disableNotificationMess);
+            } catch (TelegramApiException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
-    private void startCurrencyUpdates() {
-        Timer timer = new Timer();    
-        int notificationHour = 9; // Установка времени рассылки (9:00 утра)
+    public void startCurrencyUpdates(long notificationHour) {
+        Timer timer = new Timer();
+//        int notificationHour = 9; // Установка времени рассылки (9:00 утра)
         long interval = 60 * 60 * 1000; // Интервал рассылки (1 час)
         Date firstExecutionTime = calculateFirstExecutionTime(notificationHour);
-        timer.scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                // В этом методе получаем актуальные курсы и отправляем их подписчикам
-                try {
-                    sendCurrencyUpdateToSubscribers();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
+        if (notificationHour != 0) {
+            timer.scheduleAtFixedRate(new TimerTask() {
+                @Override
+                public void run() {
+                    // В этом методе получаем актуальные курсы и отправляем их подписчикам
+                    try {
+                        sendCurrencyUpdateToSubscribers();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
-            }
-        }, firstExecutionTime, interval);
+            }, firstExecutionTime, interval);
+        }else timer.cancel();
     }
 
-    private Date calculateFirstExecutionTime(int notificationHour) {
+
+
+    private Date calculateFirstExecutionTime(long notificationHour) {
         long currentTime = System.currentTimeMillis();
-        long todayNotificationTime = currentTime - (currentTime % 86400000) + (notificationHour * 3600000); // 86400000 миллисекунд в сутках, 3600000 миллисекунд в часе
+        long todayNotificationTime = currentTime - (currentTime % 86400000) + (notificationHour * 3600000L); // 86400000 миллисекунд в сутках, 3600000 миллисекунд в часе
         if (todayNotificationTime <= currentTime) {
             todayNotificationTime += 86400000; // Если указанное время уже прошло сегодня, переносим на завтра
         }
