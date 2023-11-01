@@ -12,7 +12,7 @@ import static com.project_group_5.Settings.TwoCurrencySettings.*;
 
 public class Settings {
     private static final Map<String, String> defoultMap = new HashMap<>();
-    private static final Map<String, String> settingsMap = new HashMap<>();
+    private static Map<String, String> settingsMap = new HashMap<>();
     private static final String emoji = "✅";
 
     public static Map<String, String> getDefoultMap() {
@@ -23,15 +23,18 @@ public class Settings {
     }
 
     public static Map<String, String> makeMap(long chatId) throws FileNotFoundException {
-        File file = new File("chatId" + chatId + "Settings");
-        FileReader reader = new FileReader(file);
-        Scanner scanner = new Scanner(reader);
-        String[] row = scanner.nextLine()
-                .replace("{", "").replace("}", "").split(", ");
-        for (String s : row) {
-            String[] keyValue = s.split("=");
-            settingsMap.put(keyValue[0], keyValue[1]);
-        }
+        if (isSettingsFile(chatId)) {
+            File file = new File("chatId" + chatId + "Settings");
+            FileReader reader = new FileReader(file);
+            Scanner scanner = new Scanner(reader);
+            String[] row = scanner.nextLine()
+                    .replace("{", "").replace("}", "").split(", ");
+            for (String s : row) {
+                String[] keyValue = s.split("=");
+                settingsMap.put(keyValue[0], keyValue[1]);
+            }
+
+        }else settingsMap = new HashMap<>(getDefoultMap());
         return settingsMap;
     }
 
@@ -64,7 +67,9 @@ public class Settings {
 
     public static String implementSettings(long chatId) throws IOException {
         String result;
-        if (!isSettingsFile(chatId) || !isSettedTwoCurrencies(chatId)) {
+        if (!isSettingsFile(chatId)) {
+            result = implementOneCurrencySettings (chatId);
+        } else if (!isSettedTwoCurrencies(chatId)) {
             renameCurrency(chatId);
             result = implementOneCurrencySettings(chatId);
         } else {
