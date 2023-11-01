@@ -45,10 +45,31 @@ public class startCommand extends BotCommand {
                 .callbackData("settings")
                 .build();
 
-        List<InlineKeyboardButton> buttonsOfStart = Stream.of(getInfoButton, settings)
+         InlineKeyboardButton notificationTime = InlineKeyboardButton
+                .builder()
+                .text("Час сповіщень")
+                .callbackData("NotificationTime")
+                .build();
+
+        InlineKeyboardButton disableNotification = InlineKeyboardButton
+                .builder()
+                .text("Вимкнути сповіщення")
+                .callbackData("DisableNotification")
+                .build(); 
+
+        
+        //List<InlineKeyboardButton> buttonsOfStart = Stream.of(getInfoButton, settings)
+          //      .map(it -> InlineKeyboardButton.builder().text(it.getText()).callbackData(it.getCallbackData()).build())
+            //    .collect(Collectors.toList());
+
+
+        
+ List<InlineKeyboardButton> buttonsOfStart = Stream.of(getInfoButton, settings, notificationTime, disableNotification)
                 .map(it -> InlineKeyboardButton.builder().text(it.getText()).callbackData(it.getCallbackData()).build())
                 .collect(Collectors.toList());
 
+
+        
         InlineKeyboardMarkup keyboardStart = InlineKeyboardMarkup
                 .builder()
                 .keyboard(Collections.singleton(buttonsOfStart))

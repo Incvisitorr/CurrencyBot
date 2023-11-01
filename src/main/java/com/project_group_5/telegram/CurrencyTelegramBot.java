@@ -417,10 +417,30 @@ public class CurrencyTelegramBot extends TelegramLongPollingCommandBot {
                 throw new RuntimeException(e);
             }
         }
+
+           if (update.getCallbackQuery().getData().equals("DisableNotification")) {
+             SendMessage disableNotificationMess = new SendMessage();
+             try {
+                 settings.setSettings(chatId, "DisableNotification", "true");
+             } catch (IOException e) {
+                 throw new RuntimeException(e);
+             }
+
+             String text = "Сповіщення вимкнуті";
+             disableNotificationMess.setText(text);
+             disableNotificationMess.setChatId(chatIdForMess);
+
+
+             try {
+                 execute(disableNotificationMess);
+             } catch (TelegramApiException e) {
+                 throw new RuntimeException(e);
+             }
+         }    
     }
 
     private void startCurrencyUpdates() {
-        Timer timer = new Timer();
+        Timer timer = new Timer();    
         int notificationHour = 9; // Установка времени рассылки (9:00 утра)
         long interval = 60 * 60 * 1000; // Интервал рассылки (1 час)
         Date firstExecutionTime = calculateFirstExecutionTime(notificationHour);
