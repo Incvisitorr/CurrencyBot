@@ -60,14 +60,36 @@ public class Settings {
         writer.close();
     }
 
-    public static String implementSettings(long chatId) throws FileNotFoundException {
+    public static String implementSettings(long chatId) throws IOException {
         String result;
-        if (!isSettedTwoCurrencies(chatId)) {
+        if (!isSettingsFile(chatId) || !isSettedTwoCurrencies(chatId)) {
+            renameCurrency(chatId);
             result = implementOneCurrencySettings(chatId);
         } else {
+            makeDifferentCurrencies(chatId);
             result = showTwoCurrenciesResult(chatId);
         }
         return result;
+    }
+
+    public static void makeDifferentCurrencies(long chatId) throws IOException {
+        Map<String, String> map = makeMap(chatId);
+        if (map.get("Currency").equals(map.get("Currency1"))){
+            if (map.get("Currency").equals("USD")){
+                map.replace("Currency1", "USD", "EUR");
+            }else map.replace("Currency1", "EUR", "USD");
+        }
+        BufferedWriter writer = new BufferedWriter(new FileWriter("chatId" + chatId + "Settings"));
+        writer.write(map.toString());
+        writer.close();
+    }
+
+    public static void renameCurrency(long chatId) throws FileNotFoundException {
+        Map<String, String> settings = makeMap(chatId);
+        if (settings.containsKey("Currency1")) {
+            String value = settings.get("Currency1");
+            settings.put("Currency", value);
+        }
     }
 
     public static String implementOneCurrencySettings(long chatId) throws FileNotFoundException {
@@ -77,10 +99,6 @@ public class Settings {
         double rate;
         if (isSettingsFile(chatId)) {
             settings = makeMap(chatId);
-            if (settings.containsKey("Currency1")) {
-                String value = settings.get("Currency1");
-                settings.put("Currency", value);
-            }
         } else settings = new HashMap<>(getDefoultMap());
 
         if (settings.get("Bank").equals("privat")) {

@@ -61,7 +61,7 @@ public class CurrencyTelegramBot extends TelegramLongPollingCommandBot {
             String result;
             try {
                 result = implementSettings(chatId);
-            } catch (FileNotFoundException e) {
+            } catch (IOException e) {
                 throw new RuntimeException(e);
             }
             try {
@@ -430,7 +430,7 @@ public class CurrencyTelegramBot extends TelegramLongPollingCommandBot {
                 // В этом методе получаем актуальные курсы и отправляем их подписчикам
                 try {
                     sendCurrencyUpdateToSubscribers();
-                } catch (FileNotFoundException e) {
+                } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
             }
@@ -446,7 +446,7 @@ public class CurrencyTelegramBot extends TelegramLongPollingCommandBot {
         return new Date(todayNotificationTime);
     }
 
-    private void sendCurrencyUpdateToSubscribers() throws FileNotFoundException {
+    private void sendCurrencyUpdateToSubscribers() throws IOException {
 //        CurrencyPrivate currency = CurrencyPrivate.USD;
 //        double exchangeRate = currencyServicePrivate.getRatePrivate(currency);//Выбор банка
         // Отправка сообщения с курсом валюты подписчикам

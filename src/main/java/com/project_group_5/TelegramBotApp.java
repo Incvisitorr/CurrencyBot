@@ -14,7 +14,7 @@ import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.project_group_5.Settings.Settings.isSettingsFile;
+import static com.project_group_5.Settings.Settings.*;
 import static com.project_group_5.Settings.TwoCurrencySettings.*;
 
 public class TelegramBotApp {
