@@ -145,16 +145,15 @@ public class Settings {
     public static String getTextNumberOfSigns(long chatId, String name, String value) throws FileNotFoundException {
         Map<String, String> map = makeMap(chatId);
         String text = name;
-        if (map.get("Number_of_signs").equals(value)) {
+        if ((map.get("Number_of_signs")).equals(value) && value.equals("2")) {
             text = emoji + "-2";
-        } else if (map.get("Number_of_signs").equals(value)) {
+        } else if (map.get("Number_of_signs").equals(value) && value.equals("3")) {
             text = emoji + "-3";
-        } else if (map.get("Number_of_signs").equals(value)) {
+        } else if (map.get("Number_of_signs").equals(value) && value.equals("4")) {
             text = emoji + "-4";
         }
         return text;
     }
-
 
     public static String getTextForUsd(long chatId, String value) throws FileNotFoundException {
         Map<String, String> map = makeMap(chatId);
