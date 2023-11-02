@@ -20,6 +20,7 @@ import static com.project_group_5.Settings.TwoCurrencySettings.*;
 
 public class TelegramBotApp {
     public static void main(String[] args) throws IOException {
+//        System.out.println(getTextNumberOfSigns(153944792, "-4", "4"));
 //        System.out.println(implementSettings(153944792));
 
         new TelegramBotService();
